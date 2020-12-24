@@ -18,4 +18,4 @@ buildNumber.properties
 .idea
 **/.gitignore
 
-**/src/test
+**/README.md

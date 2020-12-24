@@ -15,6 +15,9 @@
         <module>snakymail-member</module>
         <module>snakymail-order</module>
         <module>snakymail-product</module>
+        <module>renren-fast</module>
+        <module>renren-generator</module>
+        <module>snakymail-common</module>
     </modules>
 
 </project>
