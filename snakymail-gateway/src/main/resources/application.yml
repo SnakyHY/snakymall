@@ -1,0 +1,16 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: product_route
+          uri: lb://snakymail-product
+          predicates:
+            - Path=/api/product/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
+        - id: admin_route
+          uri: lb://renren-fast
+          predicates:
+            - Path=/api/**
+          filters:   #配置路由过滤器，将当前请求http://127.0.0.1：9001/product-service/product/1    --》   http://127.0.0.1：9001/product/1
+            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}    #路径重写的过滤器，在yml中$写为$\
