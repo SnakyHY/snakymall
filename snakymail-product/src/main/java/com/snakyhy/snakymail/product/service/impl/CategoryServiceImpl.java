@@ -2,6 +2,8 @@ package com.snakyhy.snakymail.product.service.impl;
 
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -58,6 +60,27 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         //TODO 1.检查当前删除的菜单是否被其他地方引用
         baseMapper.deleteBatchIds(asList);
+    }
+
+    @Override
+    public Long[] findCatelogPath(Long catelogId) {
+        List<Long> path=new ArrayList<>();
+        List<Long> parentPath = findParentPath(catelogId, path);
+
+        Collections.reverse(parentPath);
+
+
+        return parentPath.toArray(new Long[parentPath.size()]);
+    }
+
+    private List<Long> findParentPath(Long catelogId, List<Long> path){
+        //收集当前节点id
+        path.add(catelogId);
+        CategoryEntity entity = this.getById(catelogId);
+        if(entity.getParentCid()!=0){
+            findParentPath(entity.getParentCid(),path);
+        }
+        return path;
     }
 
     //获取子分类（递归调用）
