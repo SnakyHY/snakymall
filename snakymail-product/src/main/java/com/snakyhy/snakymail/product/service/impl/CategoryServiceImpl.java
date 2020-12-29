@@ -1,5 +1,8 @@
 package com.snakyhy.snakymail.product.service.impl;
 
+import com.snakyhy.snakymail.product.entity.CategoryBrandRelationEntity;
+import com.snakyhy.snakymail.product.service.CategoryBrandRelationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -18,10 +21,15 @@ import com.snakyhy.common.utils.Query;
 import com.snakyhy.snakymail.product.dao.CategoryDao;
 import com.snakyhy.snakymail.product.entity.CategoryEntity;
 import com.snakyhy.snakymail.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
+
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -71,6 +79,19 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 
         return parentPath.toArray(new Long[parentPath.size()]);
+    }
+
+    /**
+     * 级联更新
+     * @param category
+     */
+    @Transactional
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        this.updateById(category);
+        Long catId = category.getCatId();
+        String name = category.getName();
+        categoryBrandRelationService.updateCategory(catId,name);
     }
 
     private List<Long> findParentPath(Long catelogId, List<Long> path){
