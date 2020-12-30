@@ -33,9 +33,9 @@ public class SnakymailExceptionControllerAdvice {
         return R.error(BizCodeEnum.INVALID_EXCEPTION.getCode(),BizCodeEnum.INVALID_EXCEPTION.getMsg()).put("data",errors);
     }
 
-    @ExceptionHandler(value = Throwable.class)
-    public R handleOtherException(Throwable e){
-        log.error("发生数据自定义异常{},类型为{}",e.getMessage(),e.getClass());
-        return R.error(BizCodeEnum.UNKNOW_EXCEPTION.getCode(),BizCodeEnum.UNKNOW_EXCEPTION.getMsg());
-    }
+//    @ExceptionHandler(value = Throwable.class)
+//    public R handleOtherException(Throwable e){
+//        log.error("发生数据自定义异常{},类型为{},路径为{}",e.getMessage(),e.getClass(),e.getStackTrace());
+//        return R.error(BizCodeEnum.UNKNOW_EXCEPTION.getCode(),BizCodeEnum.UNKNOW_EXCEPTION.getMsg());
+//    }
 }

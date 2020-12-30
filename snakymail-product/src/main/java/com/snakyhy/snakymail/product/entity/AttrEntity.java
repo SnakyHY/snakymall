@@ -46,6 +46,10 @@ public class AttrEntity implements Serializable {
 	 */
 	private Integer attrType;
 	/**
+	 * 值类型
+	 */
+	private Integer valueType;
+	/**
 	 * 启用状态[0 - 禁用，1 - 启用]
 	 */
 	private Long enable;
