@@ -2,6 +2,7 @@ package com.snakyhy.snakymail.product.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.snakyhy.common.utils.PageUtils;
+import com.snakyhy.snakymail.product.entity.SpuInfoDescEntity;
 import com.snakyhy.snakymail.product.entity.SpuInfoEntity;
 import com.snakyhy.snakymail.product.vo.SpuSaveVo;
 
@@ -21,5 +22,6 @@ public interface SpuInfoService extends IService<SpuInfoEntity> {
     void saveSpuInfo(SpuSaveVo vo);
 
     void saveBaseSpuInfo(SpuInfoEntity spuInfoEntity);
+
 }
 
