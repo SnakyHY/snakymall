@@ -8,6 +8,12 @@ spring:
             - Path=/api/product/**
           filters:
             - RewritePath=/api/(?<segment>.*),/$\{segment}
+        - id: member_route
+          uri: lb://snakymail-member
+          predicates:
+            - Path=/api/member/**
+          filters:
+            - RewritePath=/api/(?<segment>.*),/$\{segment}
         - id: third_party_route
           uri: lb://snakymail-third-party
           predicates:

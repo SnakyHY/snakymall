@@ -1,8 +1,17 @@
 package com.snakyhy.snakymail.product.service.impl;
 
+import com.snakyhy.snakymail.product.entity.AttrEntity;
+import com.snakyhy.snakymail.product.service.AttrService;
+import com.snakyhy.snakymail.product.vo.AttrGroupWithAttrsVo;
+import com.snakyhy.snakymail.product.vo.AttrVo;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -18,6 +27,9 @@ import org.springframework.util.StringUtils;
 
 @Service("attrGroupService")
 public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEntity> implements AttrGroupService {
+
+    @Autowired
+    private AttrService attrService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -50,6 +62,28 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
                     wrapper);
             return new PageUtils(page);
         }
+    }
+
+    /**
+     * 根据分类id查出所有分组以及分组下的属性
+     * @param catelogId
+     * @return
+     */
+    @Override
+    public List<AttrGroupWithAttrsVo> getAttrGroupWithAttrsByCatelogId(Long catelogId) {
+
+        List<AttrGroupEntity> groupEntities = this.list(new QueryWrapper<AttrGroupEntity>()
+                .eq("catelog_id", catelogId));
+        List<AttrGroupWithAttrsVo> collect = groupEntities.stream().map((entity) -> {
+            AttrGroupWithAttrsVo vo = new AttrGroupWithAttrsVo();
+            BeanUtils.copyProperties(entity, vo);
+            List<AttrEntity> relationAttr = attrService.getRelationAttr(vo.getAttrGroupId());
+            vo.setAttrs(relationAttr);
+            return vo;
+        }).collect(Collectors.toList());
+
+
+        return collect;
     }
 
 }
