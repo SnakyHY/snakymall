@@ -6,6 +6,7 @@ import com.snakyhy.common.utils.R;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @FeignClient("snakymail-coupon")
 public interface CouponFeignService {
@@ -14,6 +15,6 @@ public interface CouponFeignService {
     //@RequiresPermissions("coupon:spubounds:save")
     R saveCouponBounds(@RequestBody SpuBoundTo spuBounds);
 
-
-    R saveSkuReduction(SkuReductionTo skuReductionTo);
+    @PostMapping("/coupon/skufullreduction/saveinfo")
+    R saveSkuReduction(@RequestBody SkuReductionTo skuReductionTo);
 }

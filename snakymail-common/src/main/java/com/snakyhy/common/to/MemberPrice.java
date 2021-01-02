@@ -1,7 +1,7 @@
 /**
   * Copyright 2020 bejson.com 
   */
-package com.snakyhy.snakymail.product.vo;
+package com.snakyhy.common.to;
 
 import lombok.Data;
 
@@ -14,10 +14,11 @@ import java.math.BigDecimal;
  * @website http://www.bejson.com/java2pojo/
  */
 @Data
-public class Attr {
+public class MemberPrice {
 
-    private Long attrId;
-    private String attrName;
-    private String attrValue;
+    private Long id;
+    private String name;
+    private BigDecimal price;
+
 
 }
