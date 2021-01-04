@@ -1,16 +1,15 @@
 package com.snakyhy.snakymail.product.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
+import com.snakyhy.snakymail.product.entity.ProductAttrValueEntity;
+import com.snakyhy.snakymail.product.service.ProductAttrValueService;
 import com.snakyhy.snakymail.product.vo.AttrRespVo;
 import com.snakyhy.snakymail.product.vo.AttrVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.snakyhy.snakymail.product.entity.AttrEntity;
 import com.snakyhy.snakymail.product.service.AttrService;
@@ -32,6 +31,25 @@ public class AttrController {
     @Autowired
     private AttrService attrService;
 
+    @Autowired
+    private ProductAttrValueService attrValueService;
+
+    //product/attr/base/listforspu/{spuId}
+    //product/attr/update/{spuId}
+
+    @PostMapping("/update/{spuId}")
+    public R updateSpuById(@PathVariable("spuId") Long spuId,@RequestBody List<ProductAttrValueEntity> entities){
+        attrValueService.updateSpuAttr(spuId,entities);
+        return R.ok();
+    }
+
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrListForSpu(@PathVariable("spuId") Long spuId){
+
+        List<ProductAttrValueEntity> data= attrValueService.baseAttrListForSpu(spuId);
+
+        return R.ok().put("data", data);
+    }
     /**
      * 获取属性的值
      * @param params
