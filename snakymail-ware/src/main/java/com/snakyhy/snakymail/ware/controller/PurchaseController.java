@@ -1,14 +1,14 @@
 package com.snakyhy.snakymail.ware.controller;
 
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
+import com.snakyhy.snakymail.ware.vo.MergeVo;
+import com.snakyhy.snakymail.ware.vo.PurchaseDoneVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.snakyhy.snakymail.ware.entity.PurchaseEntity;
 import com.snakyhy.snakymail.ware.service.PurchaseService;
@@ -30,6 +30,50 @@ public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
 
+    //ware/purchase/merge
+
+
+    @PostMapping("/done")
+    public R done(@RequestBody PurchaseDoneVo vo){
+
+        purchaseService.done(vo);
+        return R.ok();
+    }
+    /**
+     * 领取采购单
+     * @return
+     */
+    @PostMapping("/received")
+    public R received(@RequestBody List<Long> ids){
+
+        purchaseService.received(ids);
+        return R.ok();
+    }
+
+    /**
+     *合并采购需求
+     * @return
+     */
+    @PostMapping("/merge")
+    public R merge(@RequestBody MergeVo vo){
+
+        purchaseService.mergePurchase(vo);
+
+        return R.ok();
+    }
+
+    /**
+     * 查询未领取的采购单
+     * @param params
+     * @return
+     */
+    @GetMapping("/unreceive/list")
+    public R unreceiveList(@RequestParam Map<String, Object> params){
+
+        PageUtils page = purchaseService.queryPageUnreceivePurchase(params);
+
+        return R.ok().put("page", page);
+    }
     /**
      * 列表
      */
@@ -59,6 +103,8 @@ public class PurchaseController {
     @RequestMapping("/save")
     //@RequiresPermissions("ware:purchase:save")
     public R save(@RequestBody PurchaseEntity purchase){
+        purchase.setCreateTime(new Date());
+        purchase.setUpdateTime(new Date());
 		purchaseService.save(purchase);
 
         return R.ok();
