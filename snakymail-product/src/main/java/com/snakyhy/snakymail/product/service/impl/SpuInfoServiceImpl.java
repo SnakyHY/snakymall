@@ -2,6 +2,7 @@ package com.snakyhy.snakymail.product.service.impl;
 
 import com.snakyhy.common.to.SkuReductionTo;
 import com.snakyhy.common.to.SpuBoundTo;
+import com.snakyhy.common.to.es.SkuEsModel;
 import com.snakyhy.common.utils.R;
 import com.snakyhy.snakymail.product.dao.SpuInfoDescDao;
 import com.snakyhy.snakymail.product.entity.*;
@@ -13,9 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -56,6 +55,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Autowired
     private CouponFeignService couponFeignService;
 
+    @Autowired
+    private BrandService brandService;
+
+    @Autowired
+    private CategoryService categoryService;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<SpuInfoEntity> page = this.page(
@@ -68,6 +73,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     /**
      * 高级部分完善
+     *
      * @param vo
      */
     @Transactional
@@ -186,25 +192,24 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         QueryWrapper<SpuInfoEntity> wrapper = new QueryWrapper<>();
 
         String key = (String) params.get("key");
-        if(!StringUtils.isEmpty(key)){
-            wrapper.and((w)->{
-                w.eq("id", key).or().like("spu_name",key);
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("id", key).or().like("spu_name", key);
             });
         }
 
         String status = (String) params.get("status");
-        if(!StringUtils.isEmpty(status)){
+        if (!StringUtils.isEmpty(status)) {
             wrapper.eq("publish_status", status);
         }
         String brandId = (String) params.get("brandId");
-        if(!StringUtils.isEmpty(brandId)){
+        if (!StringUtils.isEmpty(brandId)) {
             wrapper.eq("brand_id", brandId);
         }
         String catelogId = (String) params.get("catelogId");
-        if(!StringUtils.isEmpty(catelogId)){
+        if (!StringUtils.isEmpty(catelogId)) {
             wrapper.eq("catalog_id", catelogId);
         }
-
 
 
         IPage<SpuInfoEntity> page = this.page(
@@ -218,7 +223,55 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Override
     public void up(Long spuId) {
 
-        //1.组装需要的数据
+        //1.查出每一个sku的信息
+        List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
+
+        //TODO 查出当前sku的所有可以被检索的规格属性
+        List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrListForSpu(spuId);
+        List<Long> collect = baseAttrs.stream().map((baseAttr) -> {
+            return baseAttr.getAttrId();
+        }).collect(Collectors.toList());
+
+        List<Long> searchAttrIds = attrService.selectSearchAttrs(collect);
+
+
+        Set<Long> idSet = new HashSet<>(searchAttrIds);
+
+        List<SkuEsModel.Attr> attrs = baseAttrs.stream().filter((baseAttr) -> {
+
+            return idSet.contains(baseAttr.getAttrId());
+
+        }).map((baseAttr) -> {
+            SkuEsModel.Attr attr = new SkuEsModel.Attr();
+            BeanUtils.copyProperties(baseAttr, attr);
+            return attr;
+        }).collect(Collectors.toList());
+
+        //2.封装
+        List<SkuEsModel> esModels = skus.stream().map((sku) -> {
+            //组装需要的数据
+            SkuEsModel esModel = new SkuEsModel();
+            BeanUtils.copyProperties(sku, esModel);
+            esModel.setSkuPrice(sku.getPrice());
+            esModel.setSkuImg(sku.getSkuDefaultImg());
+            //TODO 热度评分
+            esModel.setHotScore(0L);
+            //TODO 查询品牌分类信息
+            BrandEntity byId = brandService.getById(esModel.getBrandId());
+            esModel.setBrandName(byId.getName());
+            esModel.setBrandImg(byId.getLogo());
+            CategoryEntity categoryEntity = categoryService.getById(esModel.getCatalogId());
+            esModel.setCatalogName(categoryEntity.getName());
+
+            esModel.setAttrs(attrs);
+            //TODO 查询是否有库存
+
+
+            return esModel;
+        }).collect(Collectors.toList());
+
+        //TODO 3.将数据发给es保存 snakymail-search
+
     }
 
 

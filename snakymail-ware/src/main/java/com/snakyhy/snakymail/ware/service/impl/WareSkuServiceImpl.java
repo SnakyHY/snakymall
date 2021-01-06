@@ -2,11 +2,13 @@ package com.snakyhy.snakymail.ware.service.impl;
 
 import com.snakyhy.common.utils.R;
 import com.snakyhy.snakymail.ware.feign.ProductFeignService;
+import com.snakyhy.snakymail.ware.vo.SkuHasStockVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -77,6 +79,19 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
             this.baseMapper.addStock(skuId, wareId, skuNum);
         }
 
+    }
+
+    @Override
+    public List<SkuHasStockVo> getSkusHasStock(List<Long> skuIds) {
+        List<SkuHasStockVo> skuHasStockVos = skuIds.stream().map((skuId) -> {
+            SkuHasStockVo vo = new SkuHasStockVo();
+            //select SUM(stock-stock_locked) from wms_ware_sku where sku_id=?
+            long count = baseMapper.getSkuStock(skuId);
+            vo.setSkuId(skuId);
+            vo.setHasStock(count > 0);
+            return vo;
+        }).collect(Collectors.toList());
+        return skuHasStockVos;
     }
 
 }
