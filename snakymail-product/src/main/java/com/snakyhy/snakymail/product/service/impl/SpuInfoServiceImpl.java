@@ -1,12 +1,16 @@
 package com.snakyhy.snakymail.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
+import com.snakyhy.common.constant.ProductConstant;
+import com.snakyhy.common.to.SkuHasStockVo;
 import com.snakyhy.common.to.SkuReductionTo;
 import com.snakyhy.common.to.SpuBoundTo;
 import com.snakyhy.common.to.es.SkuEsModel;
 import com.snakyhy.common.utils.R;
-import com.snakyhy.snakymail.product.dao.SpuInfoDescDao;
 import com.snakyhy.snakymail.product.entity.*;
 import com.snakyhy.snakymail.product.feign.CouponFeignService;
+import com.snakyhy.snakymail.product.feign.SearchFeignService;
+import com.snakyhy.snakymail.product.feign.WareFeignService;
 import com.snakyhy.snakymail.product.service.*;
 import com.snakyhy.snakymail.product.vo.*;
 import org.springframework.beans.BeanUtils;
@@ -60,6 +64,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private WareFeignService wareFeignService;
+
+    @Autowired
+    private SearchFeignService searchFeignService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -225,6 +235,9 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         //1.查出每一个sku的信息
         List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
+        List<Long> skuIds = skus.stream().map((sku) -> {
+            return sku.getSkuId();
+        }).collect(Collectors.toList());
 
         //TODO 查出当前sku的所有可以被检索的规格属性
         List<ProductAttrValueEntity> baseAttrs = productAttrValueService.baseAttrListForSpu(spuId);
@@ -247,14 +260,31 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             return attr;
         }).collect(Collectors.toList());
 
+        //TODO 查询是否有库存
+        Map<Long, Boolean> stockMap=null;
+        try {
+            R r = wareFeignService.getSkusHasStock(skuIds);
+            stockMap = r.getData(new TypeReference<List<SkuHasStockVo>>(){}).stream()
+                    .collect(Collectors.toMap(SkuHasStockVo::getSkuId, SkuHasStockVo::getHasStock));
+
+        } catch (Exception e) {
+            log.error("库存服务查询异常,原因{}",e);
+        }
+
         //2.封装
+        Map<Long, Boolean> finalStockMap = stockMap;
         List<SkuEsModel> esModels = skus.stream().map((sku) -> {
             //组装需要的数据
             SkuEsModel esModel = new SkuEsModel();
             BeanUtils.copyProperties(sku, esModel);
             esModel.setSkuPrice(sku.getPrice());
             esModel.setSkuImg(sku.getSkuDefaultImg());
-            //TODO 热度评分
+            //TODO 库存，热度评分
+            if(finalStockMap ==null){
+                esModel.setHasStock(true);
+            }else{
+                esModel.setHasStock(finalStockMap.get(sku.getSkuId()));
+            }
             esModel.setHotScore(0L);
             //TODO 查询品牌分类信息
             BrandEntity byId = brandService.getById(esModel.getBrandId());
@@ -264,7 +294,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             esModel.setCatalogName(categoryEntity.getName());
 
             esModel.setAttrs(attrs);
-            //TODO 查询是否有库存
 
 
             return esModel;
@@ -272,6 +301,16 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         //TODO 3.将数据发给es保存 snakymail-search
 
+        R r = searchFeignService.productStatusUp(esModels);
+        if(r.getCode()==0){
+            //远程调用成功
+            //TODO 4.修改当前spu的状态为已上架
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
+        }else{
+            //远程调用失败
+            //TODO 重复调用问题？接口幂等性
+            log.error("商品远程es保存失败");
+        }
     }
 
 
