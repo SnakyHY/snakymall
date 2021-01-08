@@ -3,6 +3,7 @@ package com.snakyhy.snakymail.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.snakyhy.common.utils.PageUtils;
 import com.snakyhy.snakymail.product.entity.CategoryEntity;
+import com.snakyhy.snakymail.product.vo.Catalog2Vo;
 
 import java.util.List;
 import java.util.Map;
@@ -29,5 +30,9 @@ public interface CategoryService extends IService<CategoryEntity> {
     Long[] findCatelogPath(Long catelogId);
 
     void updateCascade(CategoryEntity category);
+
+    List<CategoryEntity> getLevel1Categories();
+
+    Map<String, List<Catalog2Vo>> getCatalogJson();
 }
 
