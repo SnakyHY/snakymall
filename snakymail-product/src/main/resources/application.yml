@@ -37,4 +37,4 @@ server:
 #      endpoint: oss-cn-hangzhou.aliyuncs.com
 logging:
   level:
-    com.snakyhy.snakymail: debug
+    com.snakyhy.snakymail: error
