@@ -32,12 +32,7 @@ server:
   port: 10000
 
 
-#alibaba:
-#  cloud:
-#    access-key: LTAI4G1Nn1uJzoshTiySyySG
-#    secret-key: b6FbTiUyOeiUB27nACJeCeO8B14RgC
-#    oss:
-#      endpoint: oss-cn-hangzhou.aliyuncs.com
+
 logging:
   level:
     com.snakyhy.snakymail: error
