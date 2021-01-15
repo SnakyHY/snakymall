@@ -4,6 +4,7 @@ import com.snakyhy.common.to.es.SkuEsModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -36,7 +37,8 @@ public class SearchResult {
 
 
     /* 面包屑导航数据 */
-    private List<NavVo> navs;
+    private List<NavVo> navs=new ArrayList<>();
+    private List<Long> attrIds=new ArrayList<>();
 
     @Data
     public static class NavVo {

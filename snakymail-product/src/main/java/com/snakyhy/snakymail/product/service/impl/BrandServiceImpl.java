@@ -5,6 +5,7 @@ import com.snakyhy.snakymail.product.service.CategoryBrandRelationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -51,6 +52,12 @@ public class BrandServiceImpl extends ServiceImpl<BrandDao, BrandEntity> impleme
         }
         //TODO 更新其他关联
 
+    }
+
+    @Override
+    public List<BrandEntity> getBrandsById(List<Long> brandIds) {
+        List<BrandEntity> brand_id = baseMapper.selectList(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        return brand_id;
     }
 
 }

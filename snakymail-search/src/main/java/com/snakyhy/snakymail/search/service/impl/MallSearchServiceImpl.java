@@ -1,13 +1,19 @@
 package com.snakyhy.snakymail.search.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.alibaba.nacos.client.utils.StringUtils;
 import com.snakyhy.common.to.es.SkuEsModel;
+import com.snakyhy.common.utils.R;
 import com.snakyhy.snakymail.search.config.SnakymailElasticSearchConfig;
 import com.snakyhy.snakymail.search.constant.EsConstant;
+import com.snakyhy.snakymail.search.feign.ProductFeignService;
 import com.snakyhy.snakymail.search.service.MallSearchService;
+import com.snakyhy.snakymail.search.vo.AttrResponseVo;
+import com.snakyhy.snakymail.search.vo.BrandVo;
 import com.snakyhy.snakymail.search.vo.SearchParam;
 import com.snakyhy.snakymail.search.vo.SearchResult;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -34,14 +40,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class MallSearchServiceImpl implements MallSearchService {
 
     @Autowired
     private RestHighLevelClient client;
+
+    @Autowired
+    private ProductFeignService productFeignService;
 
     /**
      * 全文检索：skuTitle-》keyword
@@ -226,6 +239,7 @@ public class MallSearchServiceImpl implements MallSearchService {
             result.setProducts(skuEsModels);
         }
 
+
         //2. 封装分页信息
         //2.1 当前页码
         result.setPageNum(searchParam.getPageNum());
@@ -304,7 +318,76 @@ public class MallSearchServiceImpl implements MallSearchService {
         }
         result.setAttrs(attrVos);
 
+        // 6. 构建面包屑导航
+        List<String> attrs = searchParam.getAttrs();
+        if (attrs != null && attrs.size() > 0) {
+            List<SearchResult.NavVo> navVos = attrs.stream().map(attr -> {
+                String[] split = attr.split("_");
+                //2_5寸:6寸
+                SearchResult.NavVo navVo = new SearchResult.NavVo();
+                //6.1 设置属性值
+                navVo.setNavValue(split[1]);
+                //6.2 查询并设置属性名
+                try {
+                    R r = productFeignService.attrInfo(Long.parseLong(split[0]));
+                    result.getAttrIds().add(Long.parseLong(split[0]));
+
+                    if (r.getCode() == 0) {
+                        AttrResponseVo attrResponseVo = r.getData("attr", new TypeReference<AttrResponseVo>(){});
+                        navVo.setNavName(attrResponseVo.getAttrName());
+                    }else{
+                        navVo.setNavName(split[0]);
+                    }
+                } catch (Exception e) {
+                    log.error("远程调用商品服务查询属性失败", e);
+                }
+                //6.3 设置面包屑跳转链接(当点击该链接时剔除点击属性)
+                String replace = replaceQueryString(searchParam, attr,"attrs");
+                navVo.setLink("http://search.snakymall.com/list.html" + (replace.isEmpty()?"":"?"+replace));
+                return navVo;
+            }).collect(Collectors.toList());
+            result.setNavs(navVos);
+        }
+
+        /**
+         * 面包屑查询优化
+         */
+        if(searchParam.getBrandId()!=null&&searchParam.getBrandId().size()>0){
+            List<SearchResult.NavVo> navs = result.getNavs();
+            SearchResult.NavVo navVo = new SearchResult.NavVo();
+            navVo.setNavName("品牌");
+            R r = productFeignService.brandsInfo(searchParam.getBrandId());
+            if(r.getCode()==0){
+                List<BrandVo> brand = r.getData("brand", new TypeReference<List<BrandVo>>() {
+                });
+                StringBuffer sb=new StringBuffer();
+                String replace="";
+                for (BrandVo brandVo : brand) {
+                    String brandName = brandVo.getBrandName();
+                    replace = replaceQueryString(searchParam, brandVo.getBrandId()+"","brandId");
+                    sb.append(brandName+";");
+                }
+                navVo.setNavValue(sb.toString());
+                navVo.setLink("http://search.snakymall.com/list.html" + (replace.isEmpty()?"":"?"+replace));
+            }
+
+
+            navs.add(navVo);
+        }
+
 
         return result;
+    }
+
+    private String replaceQueryString(SearchParam searchParam, String value,String key) {
+        String encode=null;
+        try {
+            encode= URLEncoder.encode(value,"UTF-8");
+            encode=encode.replace("+","%20");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        String queryString = searchParam.get_queryString();
+        return queryString.replace("&"+key+"=" + encode, "").replace(""+key+"=" + encode+"&", "").replace(""+key+"=" + encode, "");
     }
 }
