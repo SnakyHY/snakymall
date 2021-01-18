@@ -43,5 +43,5 @@ spring:
         - id: snakymall_product_route
           uri: lb://snakymail-product
           predicates:
-            - Host=snakymall.com
+            - Host=snakymall.com,item.snakymall.com
 

@@ -4,6 +4,7 @@
 package com.snakyhy.snakymail.product.vo;
 
 import lombok.Data;
+import lombok.ToString;
 
 import java.math.BigDecimal;
 
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
  * @author bejson.com (i@bejson.com)
  * @website http://www.bejson.com/java2pojo/
  */
+@ToString
 @Data
 public class Attr {
 

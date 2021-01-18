@@ -4,6 +4,8 @@ import com.snakyhy.snakymail.product.entity.AttrEntity;
 import com.snakyhy.snakymail.product.service.AttrService;
 import com.snakyhy.snakymail.product.vo.AttrGroupWithAttrsVo;
 import com.snakyhy.snakymail.product.vo.AttrVo;
+import com.snakyhy.snakymail.product.vo.SkuItemVo;
+import com.snakyhy.snakymail.product.vo.SpuItemAttrGroupVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -84,6 +86,12 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
 
 
         return collect;
+    }
+
+    @Override
+    public List<SpuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId) {
+        List<SpuItemAttrGroupVo> vos=baseMapper.getAttrGroupWithAttrsBySpuId(spuId,catalogId);
+        return vos;
     }
 
 }
