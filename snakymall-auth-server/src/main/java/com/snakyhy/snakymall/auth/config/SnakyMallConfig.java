@@ -9,6 +9,7 @@ public class SnakyMallConfig implements WebMvcConfigurer {
     /**
      * WebController
      * @param registry
+     * 视图映射
      */
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
