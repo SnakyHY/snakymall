@@ -1,5 +1,6 @@
 package com.snakyhy.snakymail.product.config;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -8,6 +9,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+//@EnableConfigurationProperties(ThreadPoolProperties.class)
 @Configuration
 public class MyThreadConfig {
 

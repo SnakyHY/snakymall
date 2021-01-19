@@ -36,3 +36,4 @@ server:
 logging:
   level:
     com.snakyhy.snakymail: error
+
