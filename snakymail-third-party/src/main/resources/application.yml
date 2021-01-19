@@ -8,10 +8,15 @@ spring:
       bucket: snakymail
       oss:
         endpoint: oss-cn-hangzhou.aliyuncs.com
+      mysms:
+        host: https://gyytz.market.alicloudapi.com
+        path: /sms/smsSend
+        templateId: a09602b817fd47e59e7c6e603d3f088d
+        smsSignId: 2e65b1bb3d054466b82f0c9d125465e2
+        appcode: 0172eb1e78684b35a6f42dcf98d04a46
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
 
 server:
   port: 30000
-
