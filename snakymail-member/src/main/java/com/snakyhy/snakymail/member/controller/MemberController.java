@@ -9,6 +9,7 @@ import com.snakyhy.snakymail.member.exception.UserNameExistException;
 import com.snakyhy.snakymail.member.feign.CouponFeignService;
 import com.snakyhy.snakymail.member.vo.MemberLoginVo;
 import com.snakyhy.snakymail.member.vo.MemberRegistVo;
+import com.snakyhy.snakymail.member.vo.SocialUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,12 +36,29 @@ public class MemberController {
     @Autowired
     CouponFeignService couponFeignService;
 
+
+    /**
+     * 社交登录
+     * @param socialUser
+     * @return
+     */
+    @PostMapping("/oauth2/login")
+    public R oauth2Login(@RequestBody SocialUser socialUser) {
+        MemberEntity entity = memberService.login(socialUser);
+        if (entity != null) {
+            return R.ok().setData(entity);
+        } else {
+            return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(), BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());
+        }
+    }
+
+
     @PostMapping("/login")
     public R login(@RequestBody MemberLoginVo vo){
 
         MemberEntity memberEntity=memberService.login(vo);
         if (memberEntity!=null){
-            return R.ok();
+            return R.ok().setData(memberEntity);
         }else{
             return R.error(BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getCode(),
                     BizCodeEnum.LOGINACCT_PASSWORD_INVAILD_EXCEPTION.getMsg());

@@ -35,6 +35,11 @@ spring:
           filters:   #配置路由过滤器，将当前请求http://127.0.0.1：9001/product-service/product/1    --》   http://127.0.0.1：9001/product/1
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}    #路径重写的过滤器，在yml中$写为$\
 
+
+        - id: snakymall_cart_route
+          uri: lb://snakymall-cart
+          predicates:
+            - Host=cart.snakymall.com
         - id: snakymall_auth_route
           uri: lb://snakymall-auth-server
           predicates:

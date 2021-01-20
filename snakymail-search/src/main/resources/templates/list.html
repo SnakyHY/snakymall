@@ -64,10 +64,12 @@
         </b>
         <ul>
             <li>
-                <a href="/static/search/#" class="li_2">你好，请登录</a>
+
+                <a href="http://auth.snakymall.com/login.html" th:if="${session.user==null}">欢迎，请登录</a>
+                <a th:else style="width: 100px">[[${session.user==null?'':session.user.nickname}]]</a>
             </li>
             <li>
-                <a href="/static/search/#">免费注册</a>
+                <a th:if="${session.user==null}"><a href="http://auth.snakymall.com/reg.html">免费注册</a>
             </li>
             <span>|</span>
             <li>

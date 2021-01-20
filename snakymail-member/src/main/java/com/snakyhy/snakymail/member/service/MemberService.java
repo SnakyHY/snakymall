@@ -7,6 +7,7 @@ import com.snakyhy.snakymail.member.exception.PhoneExistException;
 import com.snakyhy.snakymail.member.exception.UserNameExistException;
 import com.snakyhy.snakymail.member.vo.MemberLoginVo;
 import com.snakyhy.snakymail.member.vo.MemberRegistVo;
+import com.snakyhy.snakymail.member.vo.SocialUser;
 
 import java.util.Map;
 
@@ -27,5 +28,7 @@ public interface MemberService extends IService<MemberEntity> {
     void checkUserNameUnique(String userName) throws UserNameExistException;
 
     MemberEntity login(MemberLoginVo vo);
+
+    MemberEntity login(SocialUser socialUser);
 }
 

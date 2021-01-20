@@ -7,25 +7,25 @@ import com.snakyhy.common.exception.BizCodeEnum;
 import com.snakyhy.common.utils.R;
 import com.snakyhy.snakymall.auth.feign.MemberFeignService;
 import com.snakyhy.snakymall.auth.feign.ThirdPartyFeignService;
+import com.snakyhy.common.vo.MemberResponseVo;
 import com.snakyhy.snakymall.auth.vo.UserLoginVo;
 import com.snakyhy.snakymall.auth.vo.UserRegistVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Controller
 public class LoginController {
@@ -149,12 +149,26 @@ public class LoginController {
         return "redirect:http://auth.snakymall.com/login.html";
     }
 
+    @GetMapping("/login.html")
+    public String loginPage(HttpSession session){
+        Object attribute = session.getAttribute(AuthServerConstant.LOGIN_USER);
+        if (attribute == null) {
+            //没登录
+            return "login";
+        } else{
+            return "redirect:http://snakymall.com";
+        }
+    }
+
     @PostMapping("/login")
-    public String login(UserLoginVo vo,RedirectAttributes redirectAttributes){
+    public String login(UserLoginVo vo, RedirectAttributes redirectAttributes, HttpSession session){
         //远程登录
         R login = memberFeignService.login(vo);
         if (login.getCode() == 0){
             //成功
+            MemberResponseVo memberResponseVo = login.getData(new TypeReference<MemberResponseVo>() {
+            });
+            session.setAttribute(AuthServerConstant.LOGIN_USER,memberResponseVo);
             return "redirect:http://snakymall.com";
         }else{
             Map<String,String> errors = new HashMap<>();
