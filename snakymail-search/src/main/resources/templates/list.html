@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" >
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
@@ -66,10 +66,11 @@
             <li>
 
                 <a href="http://auth.snakymall.com/login.html" th:if="${session.user==null}">欢迎，请登录</a>
-                <a th:else style="width: 100px">[[${session.user==null?'':session.user.nickname}]]</a>
+                <a th:if="${session.user!=null}"
+                   style="width: 100px">[[${session.user==null?'':session.user.nickname}]]</a>
             </li>
             <li>
-                <a th:if="${session.user==null}"><a href="http://auth.snakymall.com/reg.html">免费注册</a>
+                <a th:if="${session.user==null}"><a href="http://auth.snakymall.com/reg.html">免费注册</a></a>
             </li>
             <span>|</span>
             <li>
@@ -768,7 +769,8 @@
             </div>
         </div>
         <div class="JD_ipone_one c">
-            <a th:href="${nav.link}" th:each="nav:${result.navs}"><span th:text="${nav.navName}"></span>：<span th:text="${nav.navValue}"></span> x</a>
+            <a th:href="${nav.link}" th:each="nav:${result.navs}"><span th:text="${nav.navName}"></span>：<span
+                    th:text="${nav.navValue}"></span> x</a>
         </div>
         <i><img src="/static/search/image/right-@1x.png" alt=""></i>
     </div>
@@ -785,7 +787,7 @@
             </div>
             <div class="JD_nav_logo" th:with="brandId=${param.brandId}">
                 <!--品牌-->
-                <div  th:if="${#strings.isEmpty(brandId)}" class="JD_nav_wrap">
+                <div th:if="${#strings.isEmpty(brandId)}" class="JD_nav_wrap">
                     <div class="sl_key">
                         <span><b>品牌：</b></span>
                     </div>
@@ -845,7 +847,8 @@
                     </div>
                 </div>
                 <!--其他的属性-->
-                <div class="JD_pre" th:each="attr:${result.getAttrs()}" th:if="${!#lists.contains(result.attrIds,attr.attrId)}">
+                <div class="JD_pre" th:each="attr:${result.getAttrs()}"
+                     th:if="${!#lists.contains(result.attrIds,attr.attrId)}">
                     <div class="sl_key">
                         <span th:text="${attr.getAttrName()}">屏幕尺寸：</span>
                     </div>
@@ -1188,7 +1191,8 @@
                                 </li>
                                 <li>
                                     <a href="#" th:with="check = ${param.hasStock}">
-                                        <input id="showHasStock" type="checkbox" th:checked="${#strings.equals(check,'1')}" >
+                                        <input id="showHasStock" type="checkbox"
+                                               th:checked="${#strings.equals(check,'1')}">
                                         仅显示有货
                                     </a>
                                 </li>
@@ -1895,7 +1899,7 @@
         //获取sort属性值并进行url跳转
         let sort = $(this).attr("sort");
         sort = $(this).hasClass("desc") ? sort + "_desc" : sort + "_asc";
-        location.href = replaceParamVal(location.href, "sort", sort,false);
+        location.href = replaceParamVal(location.href, "sort", sort, false);
         return false;
     });
 
@@ -1907,12 +1911,12 @@
 
     $("#showHasStock").change(function () {
 
-        if($(this).prop('checked')){
-            location.href=replaceParamVal(location.href,"hasStock",1,false);
-        }else {
+        if ($(this).prop('checked')) {
+            location.href = replaceParamVal(location.href, "hasStock", 1, false);
+        } else {
             //没选中
             var re = eval('/(hasStock=)([^&]*)/gi');
-            location.href = (location.href+"").replace(re,'');
+            location.href = (location.href + "").replace(re, '');
         }
         return false;
     })
